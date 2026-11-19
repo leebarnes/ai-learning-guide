@@ -73,7 +73,7 @@ export const stages = [
       },
     ],
     transferable:
-      'Everything in this stage applies to ChatGPT, Claude, Copilot, Gemini and whatever comes next. Product names and model versions change; the underlying behaviour of LLMs is remarkably consistent.',
+      'Everything in this stage applies to ChatGPT, Claude, Copilot, Gemini and whatever comes next. Product names and model versions change; the underlying behavior of LLMs is remarkably consistent.',
     watchOut: [
       'Fluent, confident writing is not evidence of accuracy.',
       'Model knowledge has a cutoff date unless web search or another tool is in use — check which is happening.',
@@ -190,7 +190,7 @@ export const stages = [
       },
       {
         title: 'Structured workflows',
-        text: 'Break a task into steps (gather → analyse → draft → check) with a clear output at each stage. Smaller steps are easier to verify and improve.',
+        text: 'Break a task into steps (gather → analyze → draft → check) with a clear output at each stage. Smaller steps are easier to verify and improve.',
       },
       {
         title: 'Skills and reusable task definitions',
@@ -253,7 +253,7 @@ export const stages = [
     whatItMeans:
       'An agent is an AI system that pursues a goal by deciding which actions to take — searching, reading files, calling tools, writing results — and checking its progress, rather than answering a single message. Integrations such as the Model Context Protocol (MCP) let agents connect to other systems.',
     whyItMatters:
-      'Agents are where AI moves from advising you to acting for you. That brings real leverage and real risk. Knowing how they work lets you evaluate claims, design sensible human checkpoints, and recognise when a simpler approach is better.',
+      'Agents are where AI moves from advising you to acting for you. That brings real leverage and real risk. Knowing how they work lets you evaluate claims, design sensible human checkpoints, and recognize when a simpler approach is better.',
     learn: [
       {
         title: 'Agent vs. chatbot',

@@ -172,7 +172,7 @@ export const roles = [
     title: 'Data Analyst',
     short: 'Exploration, data quality, SQL, Python, visualization and validation.',
     intro:
-      'AI can write queries, generate analysis code, suggest visualizations and explain results — which makes analytical rigour more important, not less. Every number an AI produces must be traceable to code you can rerun. Data analysts often move fastest into AI-assisted coding, so Stage 5 is especially relevant.',
+      'AI can write queries, generate analysis code, suggest visualizations and explain results — which makes analytical rigor more important, not less. Every number an AI produces must be traceable to code you can rerun. Data analysts often move fastest into AI-assisted coding, so Stage 5 is especially relevant.',
     focus: ['Data exploration', 'Data quality', 'SQL', 'Python', 'Data visualization', 'Analytical validation', 'Reporting automation'],
     useCases: [
       {
@@ -226,7 +226,7 @@ export const roles = [
         'Re-run the scripts from scratch and hand-check at least one result per question.',
       ],
       prompt:
-        'I have a CSV with these columns: [list columns and types].\nWrite a Python script using pandas that answers: [question].\nRequirements:\n- Print the intermediate counts so I can verify each step.\n- Handle missing values explicitly and report how many rows were excluded.\n- Save one chart as PNG with a clear title and labelled axes.\nThen explain, in plain English, what the script does step by step.',
+        'I have a CSV with these columns: [list columns and types].\nWrite a Python script using pandas that answers: [question].\nRequirements:\n- Print the intermediate counts so I can verify each step.\n- Handle missing values explicitly and report how many rows were excluded.\n- Save one chart as PNG with a clear title and labeled axes.\nThen explain, in plain English, what the script does step by step.',
     },
     advanced: {
       title: 'Lightweight AI-assisted analytics app',

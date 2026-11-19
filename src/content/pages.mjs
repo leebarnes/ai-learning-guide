@@ -59,7 +59,7 @@ export const groundRules = {
       text: 'Unless your organization has explicitly authorized it, do not paste or upload confidential, personal, client or proprietary information into a personal AI subscription. That includes code, customer records, financials, internal strategy and anything under NDA. When in doubt, it does not go in.',
     },
     {
-      title: 'Practise with synthetic or public data',
+      title: 'Practice with synthetic or public data',
       text: 'Every exercise on this site can be done with fictional or public information. AI assistants are excellent at generating realistic practice material — see below.',
     },
     {

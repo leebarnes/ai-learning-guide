@@ -269,7 +269,7 @@ ${absUrl ? `<meta property="og:url" content="${esc(absUrl)}">` : ''}
     <nav id="site-nav" class="site-nav" aria-label="Main">
       <ul>${navItems}</ul>
     </nav>
-    <button type="button" class="theme-toggle icon-btn" hidden aria-label="Switch colour theme">${icon.theme}</button>
+    <button type="button" class="theme-toggle icon-btn" hidden aria-label="Switch color theme">${icon.theme}</button>
   </div>
 </header>
 <main id="main" tabindex="-1">
@@ -412,7 +412,7 @@ const ladder = [
   { name: 'Reusable instructions', stage: 3, text: 'Standing instructions and project knowledge. You stop repeating yourself.' },
   { name: 'Skill', stage: 3, text: 'A packaged, tested task definition the assistant loads when it is relevant.' },
   { name: 'Workflow', stage: 3, text: 'Several checked steps in a fixed order. Predictable and easy to verify.' },
-  { name: 'Agent', stage: 4, text: 'The AI decides which steps and tools to use towards a goal. More flexible, less predictable.' },
+  { name: 'Agent', stage: 4, text: 'The AI decides which steps and tools to use toward a goal. More flexible, less predictable.' },
   { name: 'Code', stage: 5, text: 'A script or app that runs the same way every time — often written with an AI coding agent.' },
 ];
 
@@ -537,7 +537,7 @@ ${s.learn.map((l) => `      <li><h3>${esc(l.title)}</h3><p>${inline(l.text, root
 <section class="section section-tint" aria-labelledby="practice-h">
   <div class="container">
     <div class="section-head">
-      <h2 id="practice-h">Practise it</h2>
+      <h2 id="practice-h">Practice it</h2>
       <p>Two short exercises you can do with any AI assistant. Change the details to suit your work.</p>
     </div>
     <div class="exercise-grid">${s.exercises.map((e) => exercise(e, root)).join('\n')}</div>
@@ -581,7 +581,7 @@ page({
   <div class="container">
     <p class="eyebrow">Learn for your role</p>
     <h1>Choose your role</h1>
-    <p class="lead">Each role page shows where AI helps most in that work, what to practise, and a progression of projects from first exercises to advanced builds. The foundations are shared — they live in the <a href="${linkTo(root, 'journey/')}">learning journey</a>.</p>
+    <p class="lead">Each role page shows where AI helps most in that work, what to practice, and a progression of projects from first exercises to advanced builds. The foundations are shared — they live in the <a href="${linkTo(root, 'journey/')}">learning journey</a>.</p>
   </div>
 </section>
 <section class="section section-tight">
@@ -660,7 +660,7 @@ ${r.learningAreas
 <section class="section" aria-labelledby="practice-h">
   <div class="container">
     <div class="section-head">
-      <h2 id="practice-h">Practise and build</h2>
+      <h2 id="practice-h">Practice and build</h2>
       <p>A progression from short first exercises to a substantial project. Do them in order or pick the one that matches your experience.</p>
     </div>
     <h3 class="level-heading"><span class="badge badge-level-beginner">Beginner</span> First exercises</h3>
@@ -858,12 +858,12 @@ page({
   path: 'ground-rules/',
   active: 'ground-rules/',
   title: 'Ground rules for safe practice',
-  description: 'How to learn and use AI responsibly: protect confidential data, practise with synthetic data, verify output, and keep agents and code under control.',
+  description: 'How to learn and use AI responsibly: protect confidential data, practice with synthetic data, verify output, and keep agents and code under control.',
   body: (root) => `
 <section class="page-head">
   <div class="container">
     <p class="eyebrow">Ground rules</p>
-    <h1>Practise safely, use responsibly</h1>
+    <h1>Practice safely, use responsibly</h1>
     <p class="lead">${inline(groundRules.intro, root)}</p>
   </div>
 </section>
