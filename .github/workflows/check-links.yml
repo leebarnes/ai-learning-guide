@@ -1,9 +1,10 @@
 # Monthly check of every external learning-resource link.
 #
-#  • Broken or moved links → opens (or updates and comments on) one issue labelled "link-check",
-#    which notifies the repository owner. The issue is closed automatically once everything is OK.
+#  • Each run opens a fresh issue labelled "link-check" (which notifies the repository owner) with a
+#    tick-box checklist: broken links, moved links, and links on sites that block automated checks
+#    so they must be opened by hand. The previous month's issue is closed as superseded.
+#    If every link checks out automatically, no issue is opened and any open one is closed.
 #  • Broken links also fail the run, so GitHub sends its usual failed-workflow notification.
-#  • Sites that block automated checks are listed in the issue / run summary but need no action.
 #  • Keep-alive: GitHub disables scheduled workflows in public repositories after 60 days without
 #    activity. If the last commit is 45+ days old, this makes an empty commit to keep the schedule on.
 #    (Commits made with the built-in token don't trigger the deploy workflow.)
@@ -39,34 +40,41 @@ jobs:
         env:
           LINK_REPORT: link-report.md
 
-      - name: Open, update or close the link-check issue
+      - name: Open this month's link-check issue
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-          ACTIONABLE: ${{ steps.check.outputs.actionable }}
           FAILED: ${{ steps.check.outputs.failed }}
           REDIRECTED: ${{ steps.check.outputs.redirected }}
+          BLOCKED: ${{ steps.check.outputs.blocked }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           if [ ! -f link-report.md ]; then
             echo "No report was produced (the checker itself errored); see the run log."
             exit 0
           fi
-          existing=$(gh issue list --label link-check --state open --json number --jq '.[0].number // empty')
-          if [ "${ACTIONABLE:-0}" -gt 0 ]; then
-            gh label create link-check --color D93F0B --description "Monthly external link check" --force
-            summary="${FAILED:-0} broken and ${REDIRECTED:-0} moved link(s) need attention. [Run log]($RUN_URL)"
-            if [ -n "$existing" ]; then
-              gh issue edit "$existing" --body-file link-report.md
-              gh issue comment "$existing" --body "Re-checked: $summary"
-            else
-              gh issue create --title "Learning-resource links need attention" --label link-check --body-file link-report.md
-            fi
-          elif [ -n "$existing" ]; then
-            gh issue close "$existing" --comment "All links are OK as of this check ([run log]($RUN_URL)). Closing."
-          else
-            echo "No broken or moved links; nothing to report."
+          failed=${FAILED:-0}; moved=${REDIRECTED:-0}; manual=${BLOCKED:-0}
+          previous=$(gh issue list --label link-check --state open --json number --jq '.[].number')
+
+          if [ $((failed + moved + manual)) -eq 0 ]; then
+            echo "Every link checked out automatically; no issue needed."
+            for n in $previous; do
+              gh issue close "$n" --comment "Every link checked out automatically on the latest run ([run log]($RUN_URL)). Closing."
+            done
+            exit 0
           fi
+
+          # One fresh issue per month: the checklist is a to-do list, so start with empty boxes.
+          title="Link check $(date -u +%Y-%m):"
+          [ "$failed" -gt 0 ] && title="$title $failed broken,"
+          [ "$moved" -gt 0 ] && title="$title $moved moved,"
+          title="$title $manual to check by hand"
+          gh label create link-check --color D93F0B --description "Monthly external link check" --force
+          new_url=$(gh issue create --title "$title" --label link-check --body-file link-report.md)
+          echo "Opened $new_url"
+          for n in $previous; do
+            gh issue close "$n" --comment "Superseded by #${new_url##*/}."
+          done
 
       - name: Keep the monthly schedule active
         if: always() && github.event_name == 'schedule'

@@ -23,11 +23,15 @@
 import { appendFile, writeFile } from 'node:fs/promises';
 import { resources, providers } from '../src/content/resources.mjs';
 
-// url → { id, redirectOk }
+// url → { id, redirectOk, blocksBots }
 const urls = new Map();
 for (const r of resources) urls.set(r.url, { id: r.id, redirectOk: !!r.redirectOk, blocksBots: !!r.blocksBots });
 for (const [id, p] of Object.entries(providers))
   if (!urls.has(p.url)) urls.set(p.url, { id: `provider:${id}`, redirectOk: !!p.redirectOk, blocksBots: !!p.blocksBots });
+
+// Human-readable names for the report.
+const titleByUrl = new Map(resources.map((r) => [r.url, r.title]));
+for (const p of Object.values(providers)) if (!titleByUrl.has(p.url)) titleByUrl.set(p.url, `${p.name} (homepage)`);
 
 const UA = 'Mozilla/5.0 (compatible; link-checker)';
 const results = { ok: [], redirected: [], blocked: [], failed: [] };
@@ -85,37 +89,36 @@ const counts = {
 console.log(`\n✓ ${counts.ok} OK, ${counts.redirected} redirected, ${counts.blocked} blocked, ${counts.failed} failed`);
 
 // ── Markdown report ─────────────────────────────────────────────────────────
-const table = (list, noteHeader) =>
-  `| Resource id | Link | ${noteHeader} |\n| --- | --- | --- |\n` +
-  list.map((r) => `| \`${r.id}\` | ${r.url} | ${String(r.note).replace(/\|/g, '\\|')} |`).join('\n');
+// Every item is a GitHub task-list checkbox, so the monthly issue doubles as a to-do list.
+const item = (r, extra) =>
+  `- [ ] **${titleByUrl.get(r.url) || r.id}** — ${r.url}  \n  \`${r.id}\` · ${String(extra)}`;
 
 const runUrl =
   process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
     ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
     : '';
 
-const report = [
+const sections = [
   `## Learning-resource link check — ${new Date().toISOString().slice(0, 10)}`,
-  '',
-  `**${counts.failed} failed · ${counts.redirected} redirected · ${counts.blocked} blocked · ${counts.ok} OK** (${urls.size} links checked)${runUrl ? ` · [run log](${runUrl})` : ''}`,
-  '',
-  counts.failed
-    ? `### ✗ Failed — fix or remove\n\nThese returned an error. Find the entry by its id in \`src/content/resources.mjs\`, then update the URL or remove the entry (and its id from \`stages.mjs\` / \`roles.mjs\`).\n\n${table(results.failed, 'Error')}`
-    : '### ✓ No broken links',
-  '',
-  counts.redirected
-    ? `### → Redirected — update the link\n\nThese still work but now land somewhere else. Usually the provider moved the page: replace the URL with the new one. If the redirect is deliberate and stable, add \`redirectOk: true\` to the entry instead.\n\n${table(results.redirected, 'Now lands at')}`
-    : '',
-  '',
-  counts.blocked
-    ? `<details><summary><strong>? Blocked automated checks (${counts.blocked}) — check these by hand occasionally</strong></summary>\n\nThese sites refuse automated requests, so the checker can’t tell whether the page still exists. This is expected for some providers (e.g. PMI, DataCamp, OpenAI help centre, Kaggle) and does not by itself need action. Open them in a browser every few months.\n\n${table(results.blocked, 'Response')}\n\n</details>`
-    : '',
-  '',
-  'After fixing links, update `lastReviewed` at the top of `src/content/resources.mjs` and push to `main` to redeploy.',
-  '',
-]
-  .filter((line, i, arr) => !(line === '' && arr[i - 1] === ''))
-  .join('\n');
+  `**${counts.failed} broken · ${counts.redirected} moved · ${counts.blocked} to check by hand · ${counts.ok} OK** (${urls.size} links checked)${runUrl ? ` · [run log](${runUrl})` : ''}`,
+];
+if (counts.failed)
+  sections.push(
+    `### ✗ Broken — fix or remove (${counts.failed})\n\nThese returned an error. Find the id in \`src/content/resources.mjs\`, then update the URL or remove the entry (and its id from \`stages.mjs\` / \`roles.mjs\`).\n\n${results.failed.map((r) => item(r, r.note)).join('\n')}`,
+  );
+if (counts.redirected)
+  sections.push(
+    `### → Moved — update the link (${counts.redirected})\n\nThese still work but now land somewhere else. Replace the URL with the new one, or if the redirect is deliberate and stable, add \`redirectOk: true\` to the entry.\n\n${results.redirected.map((r) => item(r, `now lands at ${r.note}`)).join('\n')}`,
+  );
+if (counts.blocked)
+  sections.push(
+    `### ☐ Check by hand (${counts.blocked})\n\nThese sites block automated checks, so open each one in your browser and tick it off if it still shows the right page or course. If one has gone or changed, fix it in \`src/content/resources.mjs\`.\n\n${results.blocked.map((r) => item(r, r.note)).join('\n')}`,
+  );
+if (!counts.failed && !counts.redirected && !counts.blocked) sections.push('### ✓ Every link checked out automatically. Nothing to do.');
+sections.push(
+  '_When you’re done: if you changed anything, update `lastReviewed` at the top of `src/content/resources.mjs` and push to `main`. Close this issue when every box is ticked — next month’s check opens a fresh one._',
+);
+const report = sections.join('\n\n') + '\n';
 
 if (process.env.LINK_REPORT) await writeFile(process.env.LINK_REPORT, report);
 if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, report + '\n');

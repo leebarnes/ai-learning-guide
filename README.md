@@ -101,16 +101,16 @@ All external training links live in **`src/content/resources.mjs`**. Nothing els
 
 | Result | Meaning | What happens |
 | --- | --- | --- |
-| ✗ Failed | 404, other error, DNS failure or timeout | Listed in the issue; the run also fails |
-| → Redirected | Works, but lands on a different URL | Listed in the issue |
-| ? Blocked | Site refuses automated checks (401/403/429/503) | Listed in a collapsed section; no action needed |
+| ✗ Broken | 404, other error, DNS failure or timeout | Checklist item in the issue; the run also fails |
+| → Moved | Works, but lands on a different URL | Checklist item in the issue |
+| ☐ Check by hand | Site refuses automated checks (401/403/429/503, or marked `blocksBots`) | Checklist item in the issue — open it in your browser |
 | ✓ OK | Loads at the linked URL | — |
 
-**How you hear about problems:** if anything failed or redirected, the workflow opens a GitHub issue labelled `link-check` titled "Learning-resource links need attention" (or, if one is already open, updates it and adds a comment), so you get a notification. When a later run finds nothing to fix, it closes the issue automatically. Each run's page also shows the full report in its summary.
+**How you hear about it:** each run opens a fresh GitHub issue labelled `link-check`, titled like "Link check 2026-12: 1 broken, 20 to check by hand", so you get a notification. The body is a tick-box checklist: work through it, fix anything in `resources.mjs`, and close the issue. Opening a new month's issue closes the previous one as superseded. If every link checks out automatically, no issue is opened. Each run's page also shows the same report in its summary.
 
-**Fixing an issue:** find each resource id in `src/content/resources.mjs` and update or remove it. For a link that redirects on purpose (a stable entry point that forwards to a versioned page), add `redirectOk: true` to the entry instead. Then update `lastReviewed`, push to `main`, and either wait for next month's run or trigger one manually to close the issue.
+**Fixing items:** find each resource id in `src/content/resources.mjs` and update or remove it. For a link that redirects on purpose (a stable entry point that forwards to a versioned page), add `redirectOk: true` to the entry instead. If a site returns misleading errors such as 404 to automated checks while working fine in a browser, add `blocksBots: true` so it's listed under "check by hand" rather than "broken". Then update `lastReviewed` and push to `main`.
 
-**Blocked sites:** several providers (PMI, DataCamp, OpenAI help center, Kaggle) block automated checkers and will always show as blocked. Open them in a browser every few months.
+**Check-by-hand items:** several providers (PMI, DataCamp, DeepLearning.AI, the OpenAI help center, Kaggle) refuse requests from GitHub's servers, so roughly 20 links appear in this list every month. Opening them takes about five minutes. Running `npm run check:links` on your own computer gets through to more of them.
 
 **Keep-alive:** GitHub disables scheduled workflows in public repositories after 60 days without activity. If the latest commit is 45 or more days old, the monthly run makes an empty commit (`chore: keep scheduled link check active`) to keep the schedule switched on. These commits don't redeploy the site. If you edit locally, run `git pull` before pushing so you pick them up.
 
