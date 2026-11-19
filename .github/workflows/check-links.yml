@@ -1,5 +1,12 @@
-# Monthly check of every external learning-resource link. Fails (and GitHub emails the
-# repository owner) only for clearly broken links; sites that block bots are listed in the log.
+# Monthly check of every external learning-resource link.
+#
+#  • Broken or moved links → opens (or updates and comments on) one issue labelled "link-check",
+#    which notifies the repository owner. The issue is closed automatically once everything is OK.
+#  • Broken links also fail the run, so GitHub sends its usual failed-workflow notification.
+#  • Sites that block automated checks are listed in the issue / run summary but need no action.
+#  • Keep-alive: GitHub disables scheduled workflows in public repositories after 60 days without
+#    activity. If the last commit is 45+ days old, this makes an empty commit to keep the schedule on.
+#    (Commits made with the built-in token don't trigger the deploy workflow.)
 name: Check external links
 
 on:
@@ -8,14 +15,74 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # keep-alive commit
+  issues: write # link-check issue
+
+concurrency:
+  group: link-check
+  cancel-in-progress: false
 
 jobs:
   links:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm run check:links
+
+      - name: Check links
+        id: check
+        run: npm run check:links
+        continue-on-error: true
+        env:
+          LINK_REPORT: link-report.md
+
+      - name: Open, update or close the link-check issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTIONABLE: ${{ steps.check.outputs.actionable }}
+          FAILED: ${{ steps.check.outputs.failed }}
+          REDIRECTED: ${{ steps.check.outputs.redirected }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ ! -f link-report.md ]; then
+            echo "No report was produced (the checker itself errored); see the run log."
+            exit 0
+          fi
+          existing=$(gh issue list --label link-check --state open --json number --jq '.[0].number // empty')
+          if [ "${ACTIONABLE:-0}" -gt 0 ]; then
+            gh label create link-check --color D93F0B --description "Monthly external link check" --force
+            summary="${FAILED:-0} broken and ${REDIRECTED:-0} moved link(s) need attention. [Run log]($RUN_URL)"
+            if [ -n "$existing" ]; then
+              gh issue edit "$existing" --body-file link-report.md
+              gh issue comment "$existing" --body "Re-checked: $summary"
+            else
+              gh issue create --title "Learning-resource links need attention" --label link-check --body-file link-report.md
+            fi
+          elif [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "All links are OK as of this check ([run log]($RUN_URL)). Closing."
+          else
+            echo "No broken or moved links; nothing to report."
+          fi
+
+      - name: Keep the monthly schedule active
+        if: always() && github.event_name == 'schedule'
+        run: |
+          last=$(git log -1 --format=%ct)
+          days=$(( ($(date +%s) - last) / 86400 ))
+          echo "Last commit was $days day(s) ago."
+          if [ "$days" -ge 45 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "chore: keep scheduled link check active [skip ci]"
+            git push
+          fi
+
+      - name: Fail the run if any links are broken
+        if: steps.check.outcome == 'failure'
+        run: |
+          echo "One or more links are broken — see the link-check issue or the summary above."
+          exit 1

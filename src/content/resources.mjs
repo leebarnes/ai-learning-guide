@@ -20,6 +20,10 @@
 //   roles     role slugs this is especially relevant to; [] = relevant to everyone
 //   startHere true = shown as a recommended beginner starting point
 //   current   true = listed on the "Stay current" page
+//   redirectOk  optional. true = this URL deliberately redirects (e.g. a stable entry point that forwards
+//             to a versioned page), so the link checker shouldn't report it as moved.
+//   blocksBots  optional. true = the site returns misleading errors to automated checkers (e.g. Kaggle
+//             answers 404), so the link checker lists it as "check by hand" rather than broken.
 //   check     how the link was last verified — "page" (page content loaded) or "listing" (confirmed
 //             via the provider's catalog or search listings because the site blocks automated access).
 //             Not shown on the site; used by maintainers.
@@ -90,6 +94,7 @@ export const providers = {
     org: 'Kaggle (Google)',
     url: 'https://www.kaggle.com/',
     tier: 'other',
+    blocksBots: true,
     bestFor: 'Free, short, hands-on Python, SQL and pandas courses, plus public datasets.',
     cost: 'Free.',
   },
@@ -519,6 +524,7 @@ export const resources = [
     title: 'Kaggle Learn',
     provider: 'kaggle',
     url: 'https://www.kaggle.com/learn',
+    blocksBots: true,
     summary: 'Free, short, hands-on courses that run in the browser: Python, Pandas, Intro to SQL, data visualization and more.',
     format: 'catalog',
     cost: 'free-account',
@@ -610,6 +616,7 @@ export const resources = [
     title: 'Kaggle Datasets',
     provider: 'kaggle',
     url: 'https://www.kaggle.com/datasets',
+    blocksBots: true,
     summary: 'Community-shared public datasets of every size and subject, many with example analyses.',
     format: 'data',
     cost: 'free-account',
@@ -785,6 +792,7 @@ export const resources = [
     title: 'OpenAI Codex documentation',
     provider: 'openai',
     url: 'https://developers.openai.com/codex',
+    redirectOk: true, // stable entry point; currently forwards to OpenAI's docs site
     summary: 'Official documentation for Codex, OpenAI’s coding agent, with setup guides and a changelog.',
     format: 'docs',
     cost: 'free',
@@ -817,6 +825,7 @@ export const resources = [
     title: 'Model Context Protocol',
     provider: 'mcp',
     url: 'https://modelcontextprotocol.io/',
+    redirectOk: true, // forwards to the current versioned docs page
     summary: 'The official site for the open MCP standard: concepts, specification and getting-started guides.',
     format: 'docs',
     cost: 'free',

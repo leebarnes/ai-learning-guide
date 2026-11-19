@@ -47,7 +47,7 @@ scripts/
   check-links.mjs       network check of external links
 .github/workflows/
   deploy.yml            build, test and deploy to GitHub Pages on push to main
-  check-links.yml       monthly external-link check (also runnable by hand)
+  check-links.yml       monthly external-link check → GitHub issue; keeps the schedule alive
 ```
 
 **Content is separate from presentation.** You can update almost everything by editing the files in `src/content/` — they are plain JavaScript objects with comments explaining each field. The page templates live in `scripts/build.mjs` if you ever need to change layout.
@@ -95,11 +95,28 @@ All external training links live in **`src/content/resources.mjs`**. Nothing els
 
 **Remove a resource:** delete the entry and remove its `id` from any `resources` arrays. If you forget, the build stops with a clear message naming the dangling reference — it will never publish a broken reference.
 
-**Keep links fresh (suggested every 1–3 months):**
+### Automatic monthly link check
 
-1. Run `npm run check:links` (or look at the monthly "Check external links" workflow run on GitHub).
-2. Fix anything reported as **failed**. Open anything reported as **blocked** in a browser — several providers (PMI, DataCamp, OpenAI help center, Kaggle) block automated checkers, so they always appear there.
-3. Update `lastReviewed` at the top of `resources.mjs`. It is shown in the site footer and on the Resources page, so only change it when you have actually reviewed the links.
+`.github/workflows/check-links.yml` runs `scripts/check-links.mjs` at 09:00 UTC on the 1st of every month (or on demand: **Actions → Check external links → Run workflow**). Each link is sorted into:
+
+| Result | Meaning | What happens |
+| --- | --- | --- |
+| ✗ Failed | 404, other error, DNS failure or timeout | Listed in the issue; the run also fails |
+| → Redirected | Works, but lands on a different URL | Listed in the issue |
+| ? Blocked | Site refuses automated checks (401/403/429/503) | Listed in a collapsed section; no action needed |
+| ✓ OK | Loads at the linked URL | — |
+
+**How you hear about problems:** if anything failed or redirected, the workflow opens a GitHub issue labelled `link-check` titled "Learning-resource links need attention" (or, if one is already open, updates it and adds a comment), so you get a notification. When a later run finds nothing to fix, it closes the issue automatically. Each run's page also shows the full report in its summary.
+
+**Fixing an issue:** find each resource id in `src/content/resources.mjs` and update or remove it. For a link that redirects on purpose (a stable entry point that forwards to a versioned page), add `redirectOk: true` to the entry instead. Then update `lastReviewed`, push to `main`, and either wait for next month's run or trigger one manually to close the issue.
+
+**Blocked sites:** several providers (PMI, DataCamp, OpenAI help center, Kaggle) block automated checkers and will always show as blocked. Open them in a browser every few months.
+
+**Keep-alive:** GitHub disables scheduled workflows in public repositories after 60 days without activity. If the latest commit is 45 or more days old, the monthly run makes an empty commit (`chore: keep scheduled link check active`) to keep the schedule switched on. These commits don't redeploy the site. If you edit locally, run `git pull` before pushing so you pick them up.
+
+You can also run the checker locally with `npm run check:links`.
+
+**`lastReviewed`** at the top of `resources.mjs` is shown in the site footer and on the Resources page. Only change it when you have actually reviewed the links.
 
 Prefer linking to maintained catalog and landing pages over individual lessons — they move less often.
 
