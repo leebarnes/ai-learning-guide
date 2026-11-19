@@ -1,0 +1,21 @@
+# Monthly check of every external learning-resource link. Fails (and GitHub emails the
+# repository owner) only for clearly broken links; sites that block bots are listed in the log.
+name: Check external links
+
+on:
+  schedule:
+    - cron: '0 9 1 * *' # 09:00 UTC on the 1st of each month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run check:links

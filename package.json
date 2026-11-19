@@ -1,0 +1,17 @@
+{
+  "name": "ai-advantage",
+  "version": "1.0.0",
+  "description": "AI Advantage — a self-directed AI learning guide for IT knowledge workers. Static site for GitHub Pages.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test": "node scripts/build.mjs && node scripts/check.mjs",
+    "check:links": "node scripts/check-links.mjs"
+  }
+}
